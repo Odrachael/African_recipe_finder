@@ -35,7 +35,7 @@ function displayRecipes(recipes) {
 
 function payWithFlutterwave(recipeName) {
     FlutterwaveCheckout({
-        public_key: 'YOUR_FLUTTERWAVE_PUBLIC_KEY', // Replace with your public key
+        public_key: 'FLWSECK-f980725d7ac4dbc40ff4a32a6dd23c27-1909dd1c0d2vt-X', // Replace with your public key
         tx_ref: '' + Math.floor((Math.random() * 1000000000) + 1),
         amount: 100, // Amount in Naira
         currency: "NGN",

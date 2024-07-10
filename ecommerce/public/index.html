@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Collection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#">Login</a>
+        <a href="#">About</a>
+        <a href="#">Cart</a>
+        <a href="#">Clients Feedback</a>
+        <a href="#">Home</a>
+    </div>
+
+    <span class="menu-button" onclick="openNav()">&#9776;</span>
+
+    <section class="hero">
+        <h2>Welcome To Moore's Recipe Collection</h2>
+        <p>Here you can find all types of exotic Nigerian food recipes with a detailed explanation of how to cook them.</p>
+    </section>
+
+    <section class="search">
+        <input type="text" id="searchInput" placeholder="Search for a recipe...">
+        <button onclick="searchRecipes()">Search</button>
+    </section>
+
+    <section id="recipeResults" class="recipes"></section>
+
+    <footer>
+        <p>&copy; 2024 Moore's Recipe Collection</p>
+    </footer>
+
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -35,12 +35,12 @@ function displayRecipes(recipes) {
 
 function payWithFlutterwave(recipeName) {
     FlutterwaveCheckout({
-        public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your public key
+        public_key: 'YOUR_FLUTTERWAVE_PUBLIC_KEY', // Replace with your public key
         tx_ref: '' + Math.floor((Math.random() * 1000000000) + 1),
-        amount: 100, // Amount set to 100 NGN
-        currency: "NGN", // Currency set to NGN
+        amount: 100, // Amount in Naira
+        currency: "NGN",
         payment_options: "card, banktransfer, ussd",
-        redirect_url: "/verify-payment",
+        redirect_url: "https://african-recipe-finder.vercel.app/verify-payment", // Your Vercel URL here
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"

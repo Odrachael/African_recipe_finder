@@ -3,18 +3,18 @@ body {
     margin: 0;
     padding: 0;
 }
-
+/* Side Navigation */
 .sidenav {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 1;
+    height: 100%; /* Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
     top: 0;
     left: 0;
-    background-color: #111;
-    overflow-x: hidden;
-    transition: 0.5s;
-    padding-top: 60px;
+    background-color: #111; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+    padding-top: 60px; /* Place content 60px from the top */
 }
 
 .sidenav a {
@@ -42,6 +42,34 @@ body {
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
 }
+
+/* Add this to make the sidenav button visible on smaller screens */
+.menu-button {
+    font-size: 30px;
+    cursor: pointer;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #111;
+    z-index: 2;
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 768px) {
+    .menu-button {
+        display: block;
+    }
+
+    .sidenav {
+        width: 0;
+        transition: 0.5s;
+    }
+
+    .sidenav a {
+        font-size: 20px;
+    }
+}
+
 
 .hero {
     padding: 20px;

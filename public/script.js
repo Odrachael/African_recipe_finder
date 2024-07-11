@@ -40,7 +40,7 @@ function payWithFlutterwave(recipeName) {
         amount: 100, // Amount set to 100 NGN
         currency: "NGN", // Currency set to NGN
         payment_options: "card, banktransfer, ussd",
-        redirect_url: "/cart",
+        redirect_url: "https://african-recipe-finder.vercel.app/cart",
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"
@@ -70,14 +70,13 @@ async function verifyPayment(transaction_id, recipeName) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ transaction_id })
+        body: JSON.stringify({ transaction_id, recipe: recipeName })
     });
 
     const data = await response.json();
 
     if (data.status === 'success') {
-        alert('Payment successful. Redirecting to cart.');
-        window.location.href = '/cart';
+        window.location.href = data.redirectUrl;
     } else {
         alert('Payment verification failed. Please try again.');
     }

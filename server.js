@@ -12,7 +12,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Flutterwave secret key
-const flutterwaveSecretKey = 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X'; // Replace with your Flutterwave secret key
+const flutterwaveSecretKey = 'FLWSECK-f980725d7ac4dbc40ff4a32a6dd23c27-1909dd1c0d2vt-X'; // Replace with your Flutterwave secret key
+const edamamApiKey = 'f194b8afb193bcb175d6d5efd27db06c';  // Replace with your actual API key
+const edamamAppId = '4397d82e';    // Replace with your actual App ID
 
 // Serve the HTML file
 app.get('/', (req, res) => {
@@ -20,8 +22,9 @@ app.get('/', (req, res) => {
 });
 
 // Payment verification endpoint
-app.post('/verify-payment', async (req, res) => {
-  const { transaction_id } = req.body;
+app.get('/verify-payment', async (req, res) => {
+  const transaction_id = req.query.transaction_id;
+  const recipeName = req.query.recipe;
 
   try {
     const response = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
@@ -31,43 +34,31 @@ app.post('/verify-payment', async (req, res) => {
     });
 
     if (response.data.status === 'success') {
-      res.json({ status: 'success', message: 'Payment verified successfully.' });
+      // Fetch the recipe details using Edamam API
+      const edamamResponse = await axios.get(`https://api.edamam.com/search?q=${recipeName}&app_id=${edamamAppId}&app_key=${edamamApiKey}`);
+      const recipe = edamamResponse.data.hits[0].recipe; // Assuming the first result is the desired recipe
+
+      // Serve the recipe details page
+      res.send(`
+        <html>
+          <head>
+            <title>${recipe.label} - Recipe Details</title>
+          </head>
+          <body>
+            <h1>${recipe.label}</h1>
+            <img src="${recipe.image}" alt="${recipe.label}">
+            <p>Calories: ${recipe.calories.toFixed(2)}</p>
+            <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
+            <a href="${recipe.url}" target="_blank">Full Recipe</a>
+          </body>
+        </html>
+      `);
     } else {
-      res.json({ status: 'failed', message: 'Payment verification failed.' });
+      res.send('Payment verification failed.');
     }
   } catch (error) {
-    res.status(500).json({ status: 'error', message: 'An error occurred during payment verification.' });
+    res.status(500).send('An error occurred during payment verification.');
   }
-});
-
-// Serve the recipe details page
-app.get('/recipe-details', (req, res) => {
-  const recipeName = req.query.recipe;
-
-  // Fetch the recipe details using Edamam API or any other logic
-  // For demonstration, we will use a dummy recipe
-  const recipeDetails = {
-    name: recipeName,
-    calories: 500,
-    ingredients: ['Ingredient 1', 'Ingredient 2', 'Ingredient 3'],
-    image: 'https://via.placeholder.com/150',
-    url: 'https://example.com/full-recipe'
-  };
-
-  res.send(`
-    <html>
-      <head>
-        <title>${recipeDetails.name} - Recipe Details</title>
-      </head>
-      <body>
-        <h1>${recipeDetails.name}</h1>
-        <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
-        <p>Calories: ${recipeDetails.calories}</p>
-        <p>Ingredients: ${recipeDetails.ingredients.join(', ')}</p>
-        <a href="${recipeDetails.url}" target="_blank">Full Recipe</a>
-      </body>
-    </html>
-  `);
 });
 
 // Start server

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const path = require('path');
+const session = require('express-session');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +11,11 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+}));
 
 // Flutterwave secret key
 const flutterwaveSecretKey = 'FLWSECK-f980725d7ac4dbc40ff4a32a6dd23c27-1909dd1c0d2vt-X'; // Replace with your Flutterwave secret key
@@ -21,10 +27,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve the cart HTML file
+app.get('/cart', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cart.html'));
+});
+
 // Payment verification endpoint
-app.get('/verify-payment', async (req, res) => {
-  const transaction_id = req.query.transaction_id;
-  const recipeName = req.query.recipe;
+app.post('/verify-payment', async (req, res) => {
+  const { transaction_id, recipe } = req.body;
 
   try {
     const response = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
@@ -34,30 +44,21 @@ app.get('/verify-payment', async (req, res) => {
     });
 
     if (response.data.status === 'success') {
-      // Fetch the recipe details using Edamam API
-      const edamamResponse = await axios.get(`https://api.edamam.com/search?q=${recipeName}&app_id=${edamamAppId}&app_key=${edamamApiKey}`);
-      const recipe = edamamResponse.data.hits[0].recipe; // Assuming the first result is the desired recipe
+      const recipeResponse = await axios.get(`https://api.edamam.com/search?q=${recipe}&app_id=${edamamAppId}&app_key=${edamamApiKey}`);
+      const recipeData = recipeResponse.data.hits[0]?.recipe;
 
-      // Serve the recipe details page
-      res.send(`
-        <html>
-          <head>
-            <title>${recipe.label} - Recipe Details</title>
-          </head>
-          <body>
-            <h1>${recipe.label}</h1>
-            <img src="${recipe.image}" alt="${recipe.label}">
-            <p>Calories: ${recipe.calories.toFixed(2)}</p>
-            <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
-            <a href="${recipe.url}" target="_blank">Full Recipe</a>
-          </body>
-        </html>
-      `);
+      if (recipeData) {
+        // Save the recipe details in the session
+        req.session.recipeDetails = recipeData;
+        res.json({ status: 'success', message: 'Payment verified successfully.', redirectUrl: '/cart' });
+      } else {
+        res.json({ status: 'failed', message: 'Recipe not found.' });
+      }
     } else {
-      res.send('Payment verification failed.');
+      res.json({ status: 'failed', message: 'Payment verification failed.' });
     }
   } catch (error) {
-    res.status(500).send('An error occurred during payment verification.');
+    res.status(500).json({ status: 'error', message: 'An error occurred during payment verification.' });
   }
 });
 

@@ -35,12 +35,12 @@ function displayRecipes(recipes) {
 
 function payWithFlutterwave(recipeName) {
     FlutterwaveCheckout({
-        public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your actual public key
+        public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your public key
         tx_ref: '' + Math.floor((Math.random() * 1000000000) + 1),
         amount: 100, // Amount in Naira
         currency: "NGN",
         payment_options: "card, banktransfer, ussd",
-        redirect_url: `https://african-recipe-finder.vercel.app/recipe-details?recipe=${encodeURIComponent(recipeName)}`, // Redirect to recipe details page
+        redirect_url: "https://african-recipe-finder.vercel.app/cart", // Redirect to cart page
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"
@@ -70,13 +70,13 @@ async function verifyPayment(transaction_id, recipeName) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ transaction_id })
+        body: JSON.stringify({ transaction_id, recipe: recipeName })
     });
 
     const data = await response.json();
 
     if (data.status === 'success') {
-        window.location.href = `/recipe-details?recipe=${encodeURIComponent(recipeName)}`;
+        window.location.href = data.redirectUrl;
     } else {
         alert('Payment verification failed. Please try again.');
     }

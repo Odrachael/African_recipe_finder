@@ -1,12 +1,13 @@
-// Function to search recipes based on user input
+const apiKey = 'f194b8afb193bcb175d6d5efd27db06c';  // Replace with your actual API key
+const appId = '4397d82e';    // Replace with your actual App ID
+
 async function searchRecipes() {
     const query = document.getElementById('searchInput').value;
-    const response = await fetch(`/api/search?q=${query}`);
+    const response = await fetch(`https://api.edamam.com/search?q=${query}&app_id=${appId}&app_key=${apiKey}`);
     const data = await response.json();
     displayRecipes(data.hits);
 }
 
-// Function to display recipes on the index.html page
 function displayRecipes(recipes) {
     const recipeResults = document.getElementById('recipeResults');
     recipeResults.innerHTML = '';
@@ -20,7 +21,7 @@ function displayRecipes(recipes) {
             <img src="${recipe.image}" alt="${recipe.label}">
             <h3>${recipe.label}</h3>
             <p class="price">100 NGN</p>
-            <button class="buy-button" onclick="payWithFlutterwave('${recipe.label}')">Buy Now</button>
+            <button class="buy-button" onclick="payWithFlutterwave('${recipe.label}', '${JSON.stringify(recipe)}')">Buy Now</button>
             <div class="details" style="display:none;">
                 <p>Calories: ${recipe.calories.toFixed(2)}</p>
                 <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
@@ -32,15 +33,14 @@ function displayRecipes(recipes) {
     });
 }
 
-// Function to handle payment using Flutterwave
-function payWithFlutterwave(recipeName) {
+function payWithFlutterwave(recipeName, recipeDetails) {
     FlutterwaveCheckout({
-        public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your public key
+        public_key: 'FLWPUBK-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-X', // Replace with your public key
         tx_ref: '' + Math.floor((Math.random() * 1000000000) + 1),
         amount: 100, // Amount in Naira
         currency: "NGN",
         payment_options: "card, banktransfer, ussd",
-        redirect_url: "/cart", // Redirect to cart page
+        redirect_url: "", // Leave empty for now
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"
@@ -56,7 +56,7 @@ function payWithFlutterwave(recipeName) {
             logo: "https://yourlogo.com/logo.png"
         },
         callback: function(response) {
-            verifyPayment(response.transaction_id, recipeName);
+            verifyPayment(response.transaction_id, recipeName, JSON.parse(recipeDetails));
         },
         onclose: function() {
             alert('Transaction was not completed, window closed.');
@@ -64,55 +64,28 @@ function payWithFlutterwave(recipeName) {
     });
 }
 
-// Function to verify payment on the server
-async function verifyPayment(transaction_id, recipeName) {
-    try {
-        const response = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ transaction_id, recipe: recipeName })
-        });
+async function verifyPayment(transaction_id, recipeName, recipeDetails) {
+    const response = await fetch('/verify-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ transaction_id, recipeName, recipeDetails })
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (data.status === 'success') {
-            window.location.href = "/cart"; // Redirect to cart page after successful payment
-        } else {
-            alert('Payment verification failed. Please try again.');
-        }
-    } catch (error) {
-        console.error('Error verifying payment:', error);
+    if (data.status === 'success') {
+        window.location.href = '/cart.html';
+    } else {
         alert('Payment verification failed. Please try again.');
     }
 }
 
-// Function to fetch and display recipe details in cart.html
-async function fetchRecipeDetails() {
-    try {
-        const response = await fetch('/api/recipe-details');
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const recipe = await response.json();
-
-        const cartContent = document.getElementById('cartContent');
-        cartContent.innerHTML = `
-            <div class="recipe">
-                <img src="${recipe.image}" alt="${recipe.label}">
-                <h3>${recipe.label}</h3>
-                <p>Calories: ${recipe.calories.toFixed(2)}</p>
-                <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
-                <a href="${recipe.url}" target="_blank">Full Recipe</a>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-        const cartContent = document.getElementById('cartContent');
-        cartContent.innerHTML = '<p>Failed to load recipe details. Please try again.</p>';
-    }
+function openNav() {
+    document.getElementById("mySidenav").style.width = "250px";
 }
 
-// Call fetchRecipeDetails function when the cart.html page loads
-document.addEventListener('DOMContentLoaded', fetchRecipeDetails);
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+}

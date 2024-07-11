@@ -20,6 +20,34 @@
     </footer>
 
     <script>
+        async function fetchRecipeDetails() {
+    try {
+        const response = await fetch('/api/recipe-details');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const recipe = await response.json();
+
+        const cartContent = document.getElementById('cartContent');
+        cartContent.innerHTML = `
+            <div class="recipe">
+                <img src="${recipe.image}" alt="${recipe.label}">
+                <h3>${recipe.label}</h3>
+                <p>Calories: ${recipe.calories.toFixed(2)}</p>
+                <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
+                <a href="${recipe.url}" target="_blank">Full Recipe</a>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+        const cartContent = document.getElementById('cartContent');
+        cartContent.innerHTML = '<p>Failed to load recipe details. Please try again.</p>';
+    }
+}
+
+// Call fetchRecipeDetails function when the page loads
+document.addEventListener('DOMContentLoaded', fetchRecipeDetails);
+
     </script>
 </body>
 </html>

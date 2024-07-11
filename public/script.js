@@ -21,7 +21,7 @@ function displayRecipes(recipes) {
             <img src="${recipe.image}" alt="${recipe.label}">
             <h3>${recipe.label}</h3>
             <p class="price">100 NGN</p>
-            <button class="buy-button" onclick="payWithFlutterwave('${recipe.label}', '${JSON.stringify(recipe)}')">Buy Now</button>
+            <button class="buy-button" onclick="payWithFlutterwave('${recipe.label}')">Buy Now</button>
             <div class="details" style="display:none;">
                 <p>Calories: ${recipe.calories.toFixed(2)}</p>
                 <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
@@ -33,14 +33,14 @@ function displayRecipes(recipes) {
     });
 }
 
-function payWithFlutterwave(recipeName, recipeDetails) {
+function payWithFlutterwave(recipeName) {
     FlutterwaveCheckout({
         public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your public key
         tx_ref: '' + Math.floor((Math.random() * 1000000000) + 1),
-        amount: 100, // Amount in Naira
-        currency: "NGN",
+        amount: 100, // Amount set to 100 NGN
+        currency: "NGN", // Currency set to NGN
         payment_options: "card, banktransfer, ussd",
-        redirect_url: "", // Leave empty for now
+        redirect_url: "/cart",
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"
@@ -56,7 +56,7 @@ function payWithFlutterwave(recipeName, recipeDetails) {
             logo: "https://yourlogo.com/logo.png"
         },
         callback: function(response) {
-            verifyPayment(response.transaction_id, recipeName, JSON.parse(recipeDetails));
+            verifyPayment(response.transaction_id, recipeName);
         },
         onclose: function() {
             alert('Transaction was not completed, window closed.');
@@ -64,19 +64,20 @@ function payWithFlutterwave(recipeName, recipeDetails) {
     });
 }
 
-async function verifyPayment(transaction_id, recipeName, recipeDetails) {
+async function verifyPayment(transaction_id, recipeName) {
     const response = await fetch('/verify-payment', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ transaction_id, recipeName, recipeDetails })
+        body: JSON.stringify({ transaction_id })
     });
 
     const data = await response.json();
 
     if (data.status === 'success') {
-        window.location.href = '/cart.html';
+        alert('Payment successful. Redirecting to cart.');
+        window.location.href = '/cart';
     } else {
         alert('Payment verification failed. Please try again.');
     }

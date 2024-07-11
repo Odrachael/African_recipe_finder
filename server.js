@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,7 +21,7 @@ app.get('/', (req, res) => {
 
 // Payment verification endpoint
 app.post('/verify-payment', async (req, res) => {
-  const { transaction_id, recipeName, recipeDetails } = req.body;
+  const { transaction_id } = req.body;
 
   try {
     const response = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
@@ -32,17 +31,6 @@ app.post('/verify-payment', async (req, res) => {
     });
 
     if (response.data.status === 'success') {
-      // Save recipe details to cart.html
-      const cartFilePath = path.join(__dirname, 'public', 'cart.html');
-      const recipeHtml = `
-        <div class="recipe">
-            <h3>${recipeName}</h3>
-            <p>Calories: ${recipeDetails.calories.toFixed(2)}</p>
-            <p>Ingredients: ${recipeDetails.ingredientLines.join(', ')}</p>
-            <a href="${recipeDetails.url}" target="_blank">Full Recipe</a>
-        </div>
-      `;
-      fs.appendFileSync(cartFilePath, recipeHtml);
       res.json({ status: 'success', message: 'Payment verified successfully.' });
     } else {
       res.json({ status: 'failed', message: 'Payment verification failed.' });

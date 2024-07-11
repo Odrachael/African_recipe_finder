@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Flutterwave secret key
-const flutterwaveSecretKey = 'FLWSECK-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-X'; // Replace with your Flutterwave secret key
+const flutterwaveSecretKey = 'FLWSECK-f980725d7ac4dbc40ff4a32a6dd23c27-1909dd1c0d2vt-X'; // Replace with your Flutterwave secret key
 
 // Serve the HTML file
 app.get('/', (req, res) => {

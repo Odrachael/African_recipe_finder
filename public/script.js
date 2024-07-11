@@ -1,13 +1,12 @@
-const apiKey = 'f194b8afb193bcb175d6d5efd27db06c';  // Replace with your actual API key
-const appId = '4397d82e';    // Replace with your actual App ID
-
+// Function to search recipes based on user input
 async function searchRecipes() {
     const query = document.getElementById('searchInput').value;
-    const response = await fetch(`https://api.edamam.com/search?q=${query}&app_id=${appId}&app_key=${apiKey}`);
+    const response = await fetch(`/api/search?q=${query}`);
     const data = await response.json();
     displayRecipes(data.hits);
 }
 
+// Function to display recipes on the index.html page
 function displayRecipes(recipes) {
     const recipeResults = document.getElementById('recipeResults');
     recipeResults.innerHTML = '';
@@ -33,6 +32,7 @@ function displayRecipes(recipes) {
     });
 }
 
+// Function to handle payment using Flutterwave
 function payWithFlutterwave(recipeName) {
     FlutterwaveCheckout({
         public_key: 'FLWPUBK-5c9f92dd2ffb8db88f88179527f52b27-X', // Replace with your public key
@@ -40,7 +40,7 @@ function payWithFlutterwave(recipeName) {
         amount: 100, // Amount in Naira
         currency: "NGN",
         payment_options: "card, banktransfer, ussd",
-        redirect_url: "https://african-recipe-finder.vercel.app/cart", // Redirect to cart page
+        redirect_url: "/cart", // Redirect to cart page
         meta: {
             consumer_id: 23,
             consumer_mac: "92a3-912ba-1192a"
@@ -64,28 +64,55 @@ function payWithFlutterwave(recipeName) {
     });
 }
 
+// Function to verify payment on the server
 async function verifyPayment(transaction_id, recipeName) {
-    const response = await fetch('/verify-payment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ transaction_id, recipe: recipeName })
-    });
+    try {
+        const response = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ transaction_id, recipe: recipeName })
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    if (data.status === 'success') {
-        window.location.href = data.redirectUrl;
-    } else {
+        if (data.status === 'success') {
+            window.location.href = "/cart"; // Redirect to cart page after successful payment
+        } else {
+            alert('Payment verification failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error);
         alert('Payment verification failed. Please try again.');
     }
 }
 
-function openNav() {
-    document.getElementById("mySidenav").style.width = "250px";
+// Function to fetch and display recipe details in cart.html
+async function fetchRecipeDetails() {
+    try {
+        const response = await fetch('/api/recipe-details');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const recipe = await response.json();
+
+        const cartContent = document.getElementById('cartContent');
+        cartContent.innerHTML = `
+            <div class="recipe">
+                <img src="${recipe.image}" alt="${recipe.label}">
+                <h3>${recipe.label}</h3>
+                <p>Calories: ${recipe.calories.toFixed(2)}</p>
+                <p>Ingredients: ${recipe.ingredientLines.join(', ')}</p>
+                <a href="${recipe.url}" target="_blank">Full Recipe</a>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+        const cartContent = document.getElementById('cartContent');
+        cartContent.innerHTML = '<p>Failed to load recipe details. Please try again.</p>';
+    }
 }
 
-function closeNav() {
-    document.getElementById("mySidenav").style.width = "0";
-}
+// Call fetchRecipeDetails function when the cart.html page loads
+document.addEventListener('DOMContentLoaded', fetchRecipeDetails);

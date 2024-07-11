@@ -1,9 +1,11 @@
+// Require necessary modules
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const path = require('path');
 const session = require('express-session');
 
+// Initialize Express app
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -58,7 +60,17 @@ app.post('/verify-payment', async (req, res) => {
       res.json({ status: 'failed', message: 'Payment verification failed.' });
     }
   } catch (error) {
+    console.error('Payment verification error:', error);
     res.status(500).json({ status: 'error', message: 'An error occurred during payment verification.' });
+  }
+});
+
+// API endpoint to get recipe details
+app.get('/api/recipe-details', (req, res) => {
+  if (req.session.recipeDetails) {
+    res.json(req.session.recipeDetails);
+  } else {
+    res.status(404).json({ message: 'No recipe details found' });
   }
 });
 
